@@ -199,3 +199,4 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   h1 .ch{transform:none}
 }
 .hello .hi{color:var(--gold);font-weight:500}
+[hidden]{display:none!important}

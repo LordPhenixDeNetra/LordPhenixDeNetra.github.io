@@ -371,6 +371,7 @@ async function initGL() {
   // sizing + section offsets
   let vh = innerHeight, tops = [];
   const measure = () => {
+    if (renderer.xr.isPresenting) return; // the headset owns the framebuffer
     vh = innerHeight;
     renderer.setSize(innerWidth, innerHeight, false);
     camera.aspect = innerWidth / innerHeight;
@@ -390,18 +391,105 @@ async function initGL() {
   }
 
   let cur = -1, smoothY = scrollY, time = 0, last = performance.now();
-  const setPair = i => {
-    const a = keys[i], b = keys[Math.min(i + 1, keys.length - 1)];
+  const setPair = (i, j = Math.min(i + 1, keys.length - 1)) => {
+    const a = keys[i], b = keys[j];
     geo.attributes.aA.array.set(SHAPES[a]); geo.attributes.aA.needsUpdate = true;
     geo.attributes.aB.array.set(SHAPES[b]); geo.attributes.aB.needsUpdate = true;
     U.uCA.value.set(COLORS[a]); U.uCB.value.set(COLORS[b]);
     cur = i;
   };
   const lerp = (a, b, t) => a + (b - a) * t;
+  // ponytail: spin wraps at 2π, a mid-transition wrap can pop slightly; track unwrapped angle if it shows
+  const ry = L => L[4] === null ? 0 : baseY + L[4] + L[5] * (time * .12 % (Math.PI * 2));
+  const updateHero = hw => {
+    hero.visible = hw > .01; occ.visible = hw > .3;
+    if (!hero.visible) return;
+    heroMats.forEach(([m, o]) => m.opacity = o * hw);
+    const arr = pkGeo.attributes.position.array, v = new THREE.Vector3();
+    curves.forEach((cv, k) => { for (let j = 0; j < 2; j++) { cv.getPoint((time * (.18 + k % 4 * .04) + k * .13 + j * .5) % 1, v); arr.set([v.x, v.y, v.z], (k * 2 + j) * 3); } });
+    pkGeo.attributes.position.needsUpdate = true;
+    rings.forEach((r, k) => { const p = (time * .6 + k * .5) % 1; r.scale.setScalar(1 + p * 4); r.material.opacity = (1 - p) * hw; });
+  };
+
+  /* ---------- WebXR: Meta Quest (VR + passthrough mixed reality), Android AR ---------- */
+  renderer.xr.enabled = true;
+  renderer.xr.setReferenceSpaceType('local'); // origin = head at session start, works on headsets and phones
+  const XR_SCALE = { globe: .3, knot: .3, galaxy: .26, lattice: .3, wave: .28, text: .16 };
+  const pc = document.createElement('canvas'); pc.width = 1100; pc.height = 800;
+  const panelTex = new THREE.CanvasTexture(pc); panelTex.colorSpace = THREE.SRGBColorSpace;
+  const panel = new THREE.Mesh(new THREE.PlaneGeometry(1.1, .8), new THREE.MeshBasicMaterial({ map: panelTex, transparent: true }));
+  panel.position.set(-1.05, 0, -1.9); panel.rotation.y = .5; panel.visible = false; scene.add(panel);
+  const plain = s => String(s).replace(/\*\*/g, '');
+  const PANELS = {
+    globe: () => [P.name, P.title, [P.heroSub, '', `${P.coords} — ${P.city}`]],
+    knot: () => ['À propos', P.title, [plain(DATA.about.lead), '', ...DATA.timeline.map(t => `${t.tag} — ${t.title}`)]],
+    galaxy: () => ['Projets', `${PROJECTS.length} projets phares`, PROJECTS.map(p => `${p.name} · ${p.language}`)],
+    lattice: () => ['Stack', 'Polyglotte, par conviction', STACK.map(s => `${s.title} : ${s.items.join(', ')}`)],
+    wave: () => ['En ce moment', 'Projets en cours', [...DATA.now.map(n => '• ' + n.name), '', ...ROLES]],
+    text: () => ['Contact', L.email, [L.github, L.linkedin, L.x]],
+  };
+  const wrapText = (x, s, w) => {
+    if (!s) return [''];
+    const out = []; let line = '';
+    for (const word of s.split(' ')) { const t = line ? line + ' ' + word : word; if (line && x.measureText(t).width > w) { out.push(line); line = word; } else line = t; }
+    return [...out, line];
+  };
+  const drawPanel = key => {
+    const x = pc.getContext('2d'), W = pc.width, H = pc.height, [title, sub, lines] = PANELS[key]();
+    x.clearRect(0, 0, W, H);
+    x.fillStyle = 'rgba(8,10,20,.85)'; x.beginPath(); x.roundRect(2, 2, W - 4, H - 4, 40); x.fill();
+    x.strokeStyle = COLORS[key]; x.lineWidth = 4; x.stroke();
+    x.fillStyle = '#eef2ff'; x.font = '800 60px Unbounded, sans-serif'; x.fillText(title, 56, 110);
+    x.fillStyle = COLORS[key]; x.font = '500 30px "JetBrains Mono", monospace'; x.fillText(sub, 56, 160);
+    x.fillStyle = '#cfd5e6'; x.font = '400 30px "IBM Plex Sans", sans-serif';
+    let y = 222;
+    for (const l of lines.flatMap(t => wrapText(x, t, W - 112))) { if (y > H - 90) break; x.fillText(l, 56, y); y += l ? 40 : 18; }
+    x.fillStyle = '#9aa3b8'; x.font = '500 22px "JetBrains Mono", monospace';
+    x.fillText(`${keys.indexOf(key) + 1}/${keys.length}  ·  gâchette ou pincement : suivant  ·  grip : précédent`, 56, H - 40);
+    panelTex.needsUpdate = true;
+  };
+  let inXR = false, xrI = 0, xrNext = 0, xrMix = 0, xrBusy = false;
+  const xrGo = d => {
+    if (!inXR || xrBusy) return;
+    xrNext = (xrI + d + keys.length) % keys.length;
+    setPair(xrI, xrNext); xrMix = 0; xrBusy = true; drawPanel(keys[xrNext]);
+  };
+  for (let k = 0; k < 2; k++) {
+    const c = renderer.xr.getController(k); // tracked hands emit 'select' on pinch too
+    c.addEventListener('select', () => xrGo(1)); c.addEventListener('squeeze', () => xrGo(-1)); scene.add(c);
+  }
+  const xrFrame = dt => {
+    if (xrBusy && (xrMix = Math.min(xrMix + dt / 1.4, 1)) >= 1) { xrI = xrNext; setPair(xrI, xrI); xrMix = 0; xrBusy = false; }
+    const a = keys[xrI], b = keys[xrBusy ? xrNext : xrI], e = xrMix * xrMix * (3 - 2 * xrMix);
+    U.uMix.value = xrMix; U.uTime.value = time; U.uMouse.value.set(9, 9); U.uAlpha.value = 1;
+    world.position.set(.35, -.1, -2.3);
+    world.scale.setScalar(lerp(XR_SCALE[a], XR_SCALE[b], e));
+    U.uSize.value = .07 * world.scale.x; // point size ignores the model scale
+    world.rotation.set(.12, lerp(ry(LAYOUT[a]), ry(LAYOUT[b]), e) + Math.sin(time * .15) * .25, 0);
+    updateHero(a === 'globe' ? 1 - Math.min(xrMix * 1.6, 1) : 0);
+  };
+  const xrBtns = { 'immersive-vr': $('#xr-vr'), 'immersive-ar': $('#xr-ar') };
+  for (const [mode, btn] of Object.entries(xrBtns)) {
+    navigator.xr?.isSessionSupported(mode).then(ok => {
+      if (!ok) return;
+      btn.hidden = false;
+      btn.addEventListener('click', async () => {
+        try {
+          const session = await navigator.xr.requestSession(mode, { optionalFeatures: ['hand-tracking'] });
+          await renderer.xr.setSession(session);
+          session.addEventListener('end', () => { inXR = false; panel.visible = false; cur = -1; U.uSize.value = mobile ? .085 : .07; measure(); });
+          inXR = true; xrI = 0; xrMix = 0; xrBusy = false; setPair(0, 0);
+          panel.visible = true; drawPanel(keys[0]);
+          U.uPx.value = (session.renderState.baseLayer?.framebufferHeight || 2000) / 2;
+        } catch (err) { toast('Session XR impossible : ' + err.message); }
+      });
+    }).catch(() => {});
+  }
 
   renderer.setAnimationLoop(now => {
     const dt = Math.min((now - last) / 1000, .05); last = now;
     if (!reduce) time += dt;
+    if (inXR) { xrFrame(dt); renderer.render(scene, camera); return; }
     smoothY += (scrollY - smoothY) * (reduce ? 1 : .085);
     const center = smoothY + vh * .5;
     let i = 0; while (i < keys.length - 1 && tops[i + 1] <= center) i++;
@@ -419,21 +507,12 @@ async function initGL() {
     mouse.lerp(mT, .12);
     U.uMouse.value.copy(mouse);
     mouseS.lerp(mT.x > 5 ? new THREE.Vector2(0, 0) : mT, .04);
-    // ponytail: spin wraps at 2π, a mid-transition wrap can pop slightly; track unwrapped angle if it shows
-    const ry = L => L[4] === null ? 0 : baseY + L[4] + L[5] * (time * .12 % (Math.PI * 2));
     world.rotation.y = lerp(ry(La), ry(Lb), e) + Math.sin(time * .15) * .25 + mouseS.x * .3;
     world.rotation.x = .12 - mouseS.y * .15;
 
     // hero layer fades out as the globe morphs away
     const hw = i === 0 ? 1 - Math.min(mix * 1.6, 1) : 0;
-    hero.visible = hw > .01; occ.visible = hw > .3;
-    if (hero.visible) {
-      heroMats.forEach(([m, o]) => m.opacity = o * hw);
-      const arr = pkGeo.attributes.position.array, v = new THREE.Vector3();
-      curves.forEach((cv, k) => { for (let j = 0; j < 2; j++) { cv.getPoint((time * (.18 + k % 4 * .04) + k * .13 + j * .5) % 1, v); arr.set([v.x, v.y, v.z], (k * 2 + j) * 3); } });
-      pkGeo.attributes.position.needsUpdate = true;
-      rings.forEach((r, k) => { const p = (time * .6 + k * .5) % 1; r.scale.setScalar(1 + p * 4); r.material.opacity = (1 - p) * hw; });
-    }
+    updateHero(hw);
     renderer.render(scene, camera);
   });
 }
