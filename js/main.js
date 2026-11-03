@@ -113,6 +113,16 @@ function startUI() {
 fetch('https://api.github.com/users/' + GH_USER).then(r => r.ok ? r.json() : null)
   .then(u => { if (u?.public_repos) $$('[data-live="github_repos"]').forEach(el => el.dataset.count = u.public_repos); }).catch(() => {});
 
+// version picker: versions.json is generated at deploy time by .github/workflows/pages.yml
+fetch('/versions.json').then(r => r.ok ? r.json() : []).then(vs => {
+  if (!vs.length) return;
+  const sel = $('#ver'), here = location.pathname.match(/^\/(v\d[^/]*)\//)?.[1] || '';
+  sel.innerHTML = '<option value="">Dernière version</option>' + vs.map(v => `<option value="${esc(v.tag)}">${esc(v.tag)} · ${esc(v.date)}</option>`).join('');
+  sel.value = here;
+  sel.addEventListener('change', () => { location.href = '/' + (sel.value ? sel.value + '/' : ''); });
+  sel.parentElement.hidden = false;
+}).catch(() => {});
+
 // local clock
 const fmt = new Intl.DateTimeFormat('fr-FR', { timeZone: P.timezone, hour: '2-digit', minute: '2-digit', second: '2-digit' });
 const tickClock = () => $('#clock').textContent = fmt.format(new Date());

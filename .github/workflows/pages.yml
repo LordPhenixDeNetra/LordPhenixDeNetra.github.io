@@ -1,0 +1,68 @@
+# Publishes main at the site root and every v* tag in its own folder (/v1.0.0/, /v2.1.0/, ...).
+name: Deploy site (all versions)
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  # The github-pages environment only accepts deployments from main, so a tag push re-runs this workflow on main.
+  redispatch:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh workflow run "${{ github.workflow }}" --ref main --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assemble main + every tagged version
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          git archive HEAD | tar -x -C _site
+          json=""
+          for t in $(git tag -l 'v*' --sort=-v:refname); do
+            mkdir -p "_site/$t"
+            git archive "$t" | tar -x -C "_site/$t"
+            json="$json{\"tag\":\"$t\",\"date\":\"$(git log -1 --format=%cs "$t")\"},"
+          done
+          echo "[${json%,}]" > _site/versions.json
+          find _site -name IDEES.md -delete
+          find _site -name .github -type d -prune -exec rm -rf {} +
+          touch _site/.nojekyll
+          cat _site/versions.json
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
