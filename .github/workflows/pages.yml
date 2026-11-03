@@ -13,10 +13,11 @@ permissions:
   id-token: write
   actions: write
 
-# one group per ref: a tag run only re-dispatches main, so it must not be cancelled by the main run it starts
+# One group per ref: a tag run only re-dispatches main, so the main run it starts must not cancel it.
+# Main runs queue instead of cancelling each other (a push of main + a tag triggers two in a row).
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   # The github-pages environment only accepts deployments from main, so a tag push re-runs this workflow on main.
@@ -32,7 +33,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -53,8 +54,8 @@ jobs:
           touch _site/.nojekyll
           cat _site/versions.json
 
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
 
@@ -66,4 +67,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
