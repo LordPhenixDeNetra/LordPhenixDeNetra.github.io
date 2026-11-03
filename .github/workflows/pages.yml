@@ -13,8 +13,9 @@ permissions:
   id-token: write
   actions: write
 
+# one group per ref: a tag run only re-dispatches main, so it must not be cancelled by the main run it starts
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
