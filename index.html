@@ -52,8 +52,7 @@
       <div class="ctas">
         <a href="#projects" class="btn primary magnet">Explorer mes projets <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
         <a href="https://github.com/LordPhenixDeNetra" data-href="links.github" target="_blank" rel="noopener" class="btn magnet"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.4-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>GitHub</a>
-        <button class="btn magnet" id="xr-vr" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4l-2-2.5h-2L9 17H5a2 2 0 0 1-2-2z"/></svg>Entrer en VR</button>
-        <button class="btn magnet" id="xr-ar" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4l-2-2.5h-2L9 17H5a2 2 0 0 1-2-2z"/></svg>Réalité mixte</button>
+        <button class="btn magnet" id="xr-open" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4l-2-2.5h-2L9 17H5a2 2 0 0 1-2-2z"/></svg>Mode immersif 3D</button>
       </div>
     </div>
     <div class="hud"><div class="wrap">
@@ -135,6 +134,74 @@
 
 <footer><div class="wrap"><span>© <span id="yr"></span> <span data-bind="profile.name">Moussa THIOR</span> · <span data-bind="profile.alias">LordPhenixDeNetra</span></span><span>Conçu & codé à Dakar · Three.js · 0 framework</span></div></footer>
 <div class="toast" id="toast" role="status"></div>
+<dialog id="xr-guide" class="xr-guide" aria-labelledby="xr-guide-title">
+  <form method="dialog" class="xr-close-x"><button aria-label="Fermer">×</button></form>
+  <p class="kicker"><b>3D</b> Mode immersif</p>
+  <h2 id="xr-guide-title">Entrez dans le portfolio.</h2>
+  <p class="xr-intro">Avec un casque Meta Quest, le portfolio s'ouvre autour de vous : globe à saisir, cartes en orbite, technologies en planètes. Sans casque, explorez-le en aperçu sur cet écran.</p>
+  <svg id="xr-guide-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" width="1000" height="430" role="img" aria-labelledby="xr-art-title">
+  <title id="xr-art-title">Commandes des manettes Meta Quest et des mains</title>
+  <defs>
+    <g id="xr-ctl">
+      <rect x="-30" y="20" width="60" height="150" rx="28" transform="rotate(-12 0 95)" fill="#151a2c" stroke="#3a4260" stroke-width="3"/>
+      <rect x="26" y="66" width="16" height="72" rx="8" transform="rotate(-12 0 95)" fill="#a78bfa"/>
+      <rect x="-64" y="-8" width="24" height="52" rx="12" fill="#ff6b2c"/>
+      <ellipse cx="0" cy="0" rx="72" ry="56" fill="#1a1f33" stroke="#3a4260" stroke-width="3"/>
+      <circle cx="-8" cy="-6" r="20" fill="#0d1020" stroke="#3ee0ff" stroke-width="4"/>
+      <circle cx="-8" cy="-6" r="9" fill="#3ee0ff" opacity=".45"/>
+      <circle cx="36" cy="-22" r="10" fill="#2a3150"/>
+      <circle cx="32" cy="18" r="10" fill="#2a3150"/>
+    </g>
+  </defs>
+  <g font-family="JetBrains Mono, ui-monospace, monospace" font-size="17" fill="#eef2ff">
+    <use href="#xr-ctl" transform="translate(300 170)"/>
+    <use href="#xr-ctl" transform="translate(700 170) scale(-1 1)"/>
+    <g fill="#9aa3b8" font-size="13" text-anchor="middle"><text x="336" y="152">Y</text><text x="332" y="192">X</text><text x="664" y="152">B</text><text x="668" y="192">A</text></g>
+    <text x="300" y="400" text-anchor="middle" fill="#9aa3b8">Manette gauche</text>
+    <text x="700" y="400" text-anchor="middle" fill="#9aa3b8">Manette droite</text>
+    <g stroke="#3ee0ff" stroke-width="2" fill="none" opacity=".8">
+      <path d="M205 82 L286 158"/><path d="M205 190 L240 188"/><path d="M205 300 L330 276"/>
+      <path d="M795 82 L714 158"/><path d="M795 190 L760 188"/><path d="M795 300 L670 276"/>
+    </g>
+    <g>
+      <text x="20" y="72" font-weight="700" fill="#3ee0ff">STICK</text><text x="20" y="94">pivoter de 30°</text>
+      <text x="20" y="182" font-weight="700" fill="#ff6b2c">GÂCHETTE</text><text x="20" y="204">sélectionner</text>
+      <text x="20" y="292" font-weight="700" fill="#a78bfa">GRIP</text><text x="20" y="314">saisir · lancer</text>
+    </g>
+    <g text-anchor="end">
+      <text x="980" y="62" font-weight="700" fill="#3ee0ff">STICK</text><text x="980" y="84">tourner le globe</text><text x="980" y="104">rapprocher l'objet tenu</text>
+      <text x="980" y="182" font-weight="700" fill="#ff6b2c">GÂCHETTE</text><text x="980" y="204">sélectionner</text>
+      <text x="980" y="292" font-weight="700" fill="#a78bfa">GRIP</text><text x="980" y="314">saisir · lancer</text>
+    </g>
+    <g transform="translate(500 150)" stroke-linecap="round" fill="none">
+      <path d="M-40 70 C-48 20 -30 -18 -6 -34" stroke="#eef2ff" stroke-width="10"/>
+      <path d="M38 70 C46 26 30 -12 6 -32" stroke="#eef2ff" stroke-width="10"/>
+      <circle cx="0" cy="-36" r="10" fill="#34d399" stroke="none"/>
+      <circle cx="0" cy="-36" r="22" stroke="#34d399" stroke-width="3" opacity=".5"/>
+    </g>
+    <g text-anchor="middle">
+      <text x="500" y="72" font-weight="700" fill="#34d399">MAINS NUES</text>
+      <text x="500" y="262">pincer = sélectionner</text><text x="500" y="284">pincer longtemps = saisir</text>
+      <text x="500" y="340" font-weight="700" fill="#ffc24b">DEUX GRIPS (ou deux mains)</text><text x="500" y="362">agrandir · réduire</text>
+    </g>
+  </g>
+</svg>
+  <div class="xr-legend">
+    <div><h3>Sur ordinateur (aperçu)</h3><ul><li><kbd>Souris</kbd> viser</li><li><kbd>Clic gauche</kbd> sélectionner</li><li><kbd>Clic maintenu</kbd> ou <kbd>clic droit</kbd> saisir</li><li><kbd>←</kbd> <kbd>→</kbd> pivoter</li><li><kbd>Échap</kbd> quitter</li></ul></div>
+    <div><h3>Dans le casque</h3><ul><li>Le <b>dock</b> de sphères à hauteur de taille change de section.</li><li>Les particules <b>fuient vos mains</b>.</li><li>Les objets lâchés <b>reviennent</b> à leur place.</li><li>La sphère <b>Aide</b> rouvre ce schéma.</li></ul></div>
+  </div>
+  <p class="xr-novr" id="xr-novr">Aucun casque détecté. Pour la VR, ouvrez ce site dans le navigateur du Meta Quest.</p>
+  <div class="ctas">
+    <button class="btn primary" id="xr-vr" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4l-2-2.5h-2L9 17H5a2 2 0 0 1-2-2z"/></svg>Entrer en VR</button>
+    <button class="btn primary" id="xr-ar" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4l-2-2.5h-2L9 17H5a2 2 0 0 1-2-2z"/></svg>Réalité mixte</button>
+    <button class="btn" id="xr-pv" type="button">Aperçu sur cet écran</button>
+  </div>
+</dialog>
+<div class="xr-hud" aria-live="polite">
+  <span><kbd>Souris</kbd> viser</span><span><kbd>Clic</kbd> sélectionner</span><span><kbd>Maintenir</kbd> / <kbd>clic droit</kbd> saisir</span><span><kbd>←</kbd><kbd>→</kbd> pivoter</span>
+  <button class="btn" id="xr-exit" type="button">Quitter l'aperçu <kbd>Échap</kbd></button>
+</div>
+
 
 <script type="module" src="js/main.js"></script>
 </body>

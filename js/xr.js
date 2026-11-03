@@ -65,6 +65,8 @@ function slab(w, h, d, color, front, back) {
 function label(text, color = '#eef2ff', width = .16, font = FONT.m(40)) {
   const t = tex(512, 128, (x, W, H) => {
     x.font = font; x.textAlign = 'center'; x.textBaseline = 'middle';
+    const fit = (W - 24) / x.measureText(text).width;
+    if (fit < 1) x.font = font.replace(/(\d+)px/, (_, n) => `${Math.floor(n * fit)}px`);
     x.shadowColor = 'rgba(0,0,0,.9)'; x.shadowBlur = 12; x.fillStyle = color; x.fillText(text, W / 2, H / 2);
   });
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false }));
@@ -280,7 +282,7 @@ export async function startXR(mode, ctx) {
 
   /* ----- dock: section orbs that follow you at waist height ----- */
   const dock = add(scene, new THREE.Group());
-  const DOCK = [...keys.map((k, i) => ({ i, label: LABELS[k] || k, color: COLORS[k] })), { exit: true, label: 'Quitter', color: '#ff4d6d' }];
+  const DOCK = [...keys.map((k, i) => ({ i, label: LABELS[k] || k, color: COLORS[k] })), { help: true, label: 'Aide', color: '#eef2ff' }, { exit: true, label: 'Quitter', color: '#ff4d6d' }];
   const orbs = DOCK.map((d, i) => {
     const x = (i - (DOCK.length - 1) / 2) * .12, orb = new THREE.Group();
     orb.position.set(x, 0, x * x * 1.2);
@@ -289,13 +291,45 @@ export async function startXR(mode, ctx) {
     const tag = label(d.label, '#eef2ff', .13); tag.position.y = -.065;
     orb.add(shell, core, tag); dock.add(orb);
     orb.userData.shell = shell; orb.userData.dock = d;
-    return interactive(orb, { hit: shell, click: () => d.exit ? end() : goTo(d.i) });
+    return interactive(orb, { hit: shell, click: () => d.exit ? end() : d.help ? showGuide() : goTo(d.i) });
   });
-  const hintTex = tex(512, 220, (x, W, H) => {
-    panelBg(x, W, H, '#3ee0ff', .88);
-    x.font = FONT.m(26); x.fillStyle = '#eef2ff';
-    ['Gâchette / pincer : sélectionner', 'Maintenir ou grip : saisir', 'Deux mains : agrandir', 'Stick : tourner · rapprocher'].forEach((s, k) => x.fillText(s, 30, 56 + k * 44));
+
+  /* ----- help: illustrated guide panel + labels on the real controllers ----- */
+  let helpUntil = Infinity, placeGuide = true;
+  const art = new Image();
+  const guideTex = tex(1400, 800, (x, W, H) => {
+    panelBg(x, W, H, '#3ee0ff', .95);
+    x.font = FONT.t(54); x.fillStyle = '#eef2ff'; x.fillText('Comment ça marche', 60, 96);
+    x.font = FONT.m(26); x.fillStyle = '#9aa3b8'; x.fillText('Manettes Meta Quest ou mains nues', 62, 140);
+    if (art.complete && art.naturalWidth) x.drawImage(art, 40, 170, W - 80, (W - 80) * art.naturalHeight / art.naturalWidth);
+    x.font = FONT.m(26); x.fillStyle = '#ffc24b';
+    x.fillText('Gâchette ou pincement sur ce panneau : fermer   ·   sphère « Aide » du dock : rouvrir', 62, H - 40);
   });
+  const svg = document.getElementById('xr-guide-art');
+  if (svg) {
+    art.onload = () => guideTex.redraw();
+    art.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+  }
+  const guide = add(scene, slab(.92, .526, .025, '#3ee0ff', guideTex)); // must sit in front of the globe (its front is ~.84 m away)
+  interactive(guide, { click: () => { guide.visible = false; helpUntil = getTime() + 25; } });
+  function showGuide() { guide.visible = true; placeGuide = true; helpUntil = Infinity; }
+  const helpOn = () => getTime() < helpUntil;
+  // callouts in grip space (approximate for Quest Touch controllers); side = outer side of the hand
+  const calloutLines = new THREE.LineBasicMaterial({ color: 0x3ee0ff, transparent: true, opacity: .8, depthWrite: false });
+  const controllerHelp = handedness => {
+    const side = handedness === 'left' ? -1 : 1, g = new THREE.Group();
+    [
+      [handedness === 'left' ? 'Stick : pivoter de 30°' : 'Stick : tourner · rapprocher', '#3ee0ff', [0, .02, -.03], [0, .12, -.04]],
+      ['Gâchette : sélectionner', '#ff6b2c', [0, -.015, -.07], [side * .09, -.06, -.12]],
+      ['Grip : saisir · lancer', '#a78bfa', [-side * .02, -.02, -.01], [-side * .12, -.06, .02]],
+    ].forEach(([text, color, a, b]) => {
+      const l = label(text, color, .15); l.position.set(...b); g.add(l);
+      g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a), new THREE.Vector3(...b)]), calloutLines));
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(.004, 8, 6), new THREE.MeshBasicMaterial({ color })); dot.position.set(...a); g.add(dot);
+    });
+    return g;
+  };
+  const pinchHelp = () => { const l = label('Pincer : sélectionner · maintenir : saisir', '#34d399', .2); l.position.set(0, .06, -.04); return l; };
 
   /* ----- pointers: XR controllers / hands, or the mouse in preview ----- */
   const pointers = [];
@@ -341,8 +375,12 @@ export async function startXR(mode, ctx) {
       const ray = add(scene, renderer.xr.getController(k)), p = makePointer(ray);
       const grip = add(scene, renderer.xr.getControllerGrip(k)); grip.add(cmf.createControllerModel(grip));
       const hand = add(scene, renderer.xr.getHand(k)); hand.add(hmf.createHandModel(hand, 'mesh'));
-      if (k === 0) { const h = new THREE.Mesh(new THREE.PlaneGeometry(.16, .07), new THREE.MeshBasicMaterial({ map: hintTex, transparent: true })); h.position.set(0, .07, .02); h.rotation.x = -.9; grip.add(h); }
-      const on = { connected: e => { p.source = e.data; p.active = true; p.line.material.opacity = e.data.hand ? .35 : .7; }, disconnected: () => { p.active = false; release(p); p.source = null; },
+      const on = { connected: e => {
+          p.source = e.data; p.active = true; p.line.material.opacity = e.data.hand ? .35 : .7;
+          p.help?.removeFromParent();
+          p.help = e.data.hand ? ray.add(pinchHelp()).children.at(-1) : grip.add(controllerHelp(e.data.handedness)).children.at(-1);
+        },
+        disconnected: () => { p.active = false; release(p); p.source = null; p.help?.removeFromParent(); p.help = null; },
         selectstart: () => onSelectStart(p), selectend: () => onSelectEnd(p), squeezestart: () => onSqueezeStart(p), squeezeend: () => onSqueezeEnd(p) };
       Object.entries(on).forEach(([e, f]) => { ray.addEventListener(e, f); cleanups.push(() => ray.removeEventListener(e, f)); });
       cleanups.push(() => { ray.remove(p.line, p.dot); });
@@ -361,11 +399,18 @@ export async function startXR(mode, ctx) {
       [cv, 'pointerdown', e => e.button === 2 ? onSqueezeStart(p) : onSelectStart(p)],
       [cv, 'pointerup', e => e.button === 2 ? onSqueezeEnd(p) : onSelectEnd(p)],
       [cv, 'contextmenu', e => e.preventDefault()],
-      [window, 'keydown', e => { if (e.key === 'ArrowLeft') yaw.v += .2; if (e.key === 'ArrowRight') yaw.v -= .2; if (e.key === 'Escape') end(); camera.rotation.y = yaw.v; }],
+      [window, 'keydown', e => { if (e.key === 'ArrowLeft') yaw.v += Math.PI / 6; if (e.key === 'ArrowRight') yaw.v -= Math.PI / 6; if (e.key === 'Escape') end(); camera.rotation.y = yaw.v; }],
     ];
     on.forEach(([t, e, f]) => { t.addEventListener(e, f); cleanups.push(() => t.removeEventListener(e, f)); });
     cleanups.push(() => document.body.classList.remove('xr-preview'));
   }
+
+  /* ----- snap turn: spin everything around the head's vertical axis ----- */
+  const UP = new THREE.Vector3(0, 1, 0), turnQ = new THREE.Quaternion(), pivot = new THREE.Vector3();
+  const snapTurn = a => {
+    turnQ.setFromAxisAngle(UP, -a); pivot.set(hp.x, 0, hp.z);
+    for (const o of [root, guide]) { o.position.sub(pivot).applyQuaternion(turnQ).add(pivot); o.quaternion.premultiply(turnQ); }
+  };
 
   /* ----- navigation between shapes ----- */
   let cur = 0, next = 0, mix = 0, busy = false, active = keys[0], first = true;
@@ -414,6 +459,11 @@ export async function startXR(mode, ctx) {
       live.forEach(([k, tx, every]) => { if (SEC[k].visible && (every < .5 || (t * 10 | 0) % 10 === 0)) tx.redraw(); });
     }
 
+    if (guide.visible && placeGuide) {
+      placeGuide = false;
+      guide.position.copy(hp).addScaledVector(hd, .68); guide.position.y = hp.y - .06; guide.lookAt(hp);
+    }
+
     // dock follows your gaze lazily, at waist height
     tv.copy(hp).addScaledVector(hd, .45); tv.y = hp.y - .42;
     if (first) { dock.position.copy(tv); first = false; } else dock.position.lerp(tv, .03);
@@ -421,7 +471,7 @@ export async function startXR(mode, ctx) {
     orbs.forEach(o => { const d = o.userData.dock, on = !d.exit && d.i === (busy ? next : cur); o.userData.ix.base = on ? 1.35 : 1; o.userData.shell.rotation.y += dt * (on ? 1.8 : .4); });
 
     // pointers: aim, hover, long-press grab, sticks, velocity
-    const targets = items.filter(o => { const s = o.userData.ix.sec; return !s || SEC[s].visible; }).map(o => o.userData.ix.hit);
+    const targets = items.filter(o => { const s = o.userData.ix.sec; return o.visible && (!s || SEC[s].visible); }).map(o => o.userData.ix.hit);
     pointers.forEach((p, k) => {
       if (!p.active) { p.line.visible = false; p.dot.visible = false; U[k ? 'uH1' : 'uH0'].value.copy(FAR); return; }
       p.update?.(); p.ray.updateMatrixWorld();
@@ -437,8 +487,12 @@ export async function startXR(mode, ctx) {
       const ax = p.source?.gamepad?.axes;
       if (ax?.length >= 4) {
         if (p.grabbed?.parent === p.ray) p.grabbed.position.z = Math.min(-.08, p.grabbed.position.z + ax[3] * dt * 1.6);
-        else holder.rotation.y += ax[2] * dt * 1.8;
+        if (p.source.handedness === 'left') {
+          if (!p.snapLock && Math.abs(ax[2]) > .7) { snapTurn(-Math.sign(ax[2]) * Math.PI / 6); p.snapLock = true; pulse(p, .5, 30); }
+          else if (Math.abs(ax[2]) < .3) p.snapLock = false;
+        } else if (!p.grabbed) holder.rotation.y += ax[2] * dt * 1.8;
       }
+      if (p.help) p.help.visible = helpOn();
       // particles flee from your hands (in the world's local space)
       U[k ? 'uH1' : 'uH0'].value.copy(world.worldToLocal(tv.copy(p.pos)));
     });

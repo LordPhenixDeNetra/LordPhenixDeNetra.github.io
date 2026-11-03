@@ -33,7 +33,10 @@ Dans le casque : laser + gâchette (ou pincement des doigts) pour sélectionner,
 deux mains pour agrandir, stick pour tourner le globe ou rapprocher l'objet tenu. Les particules fuient vos mains.
 WebXR exige HTTPS : testez sur l'URL GitHub Pages.
 
-Aperçu sans casque : `http://localhost:8000/#xr-preview` (souris = laser, clic gauche = gâchette, clic droit = grip, flèches = tourner, Échap = quitter).
+Le bouton **Mode immersif 3D** du hero ouvre un guide illustré des commandes et propose VR, réalité mixte ou aperçu sur ordinateur.
+Stick gauche : pivoter de 30° ; stick droit : tourner le globe ; étiquettes affichées sur les manettes au démarrage, sphère « Aide » pour revoir le schéma.
+
+Aperçu sans casque : bouton « Aperçu sur cet écran », ou `#xr-preview` à la fin de l'URL (souris = laser, clic gauche = gâchette, clic droit = grip, flèches = tourner, Échap = quitter).
 
 ## Modifier le contenu
 

@@ -202,3 +202,23 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 [hidden]{display:none!important}
 .xr-preview header,.xr-preview main,.xr-preview footer,.xr-preview .rail,.xr-preview .cur,.xr-preview .cur-ring{display:none!important}
 .xr-preview #gl{pointer-events:auto;cursor:crosshair}
+
+/* immersive mode: guide dialog + preview HUD */
+.xr-guide{margin:auto;width:min(1040px,calc(100% - 24px));max-height:calc(100vh - 24px);overflow:auto;background:#080a14;color:var(--fg);border:1px solid rgba(62,224,255,.3);border-radius:20px;padding:clamp(20px,4vw,40px);box-shadow:0 40px 140px -30px rgba(62,224,255,.4)}
+.xr-guide::backdrop{background:rgba(3,4,8,.78);backdrop-filter:blur(6px)}
+.xr-guide h2{margin-bottom:12px}
+.xr-intro{color:#cfd5e6;max-width:62ch;margin-bottom:18px}
+.xr-guide svg#xr-guide-art{width:100%;height:auto;display:block;margin:8px 0 20px}
+.xr-legend{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.xr-legend div{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,.02)}
+.xr-legend h3{font:600 .78rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.xr-legend ul{list-style:none;display:grid;gap:7px;font-size:.92rem;color:#cfd5e6}
+.xr-guide kbd,.xr-hud kbd{font:500 .75rem var(--mono);border:1px solid rgba(255,255,255,.2);border-radius:5px;padding:2px 6px;color:var(--fg);background:rgba(255,255,255,.04)}
+.xr-novr{font:500 .8rem var(--mono);color:var(--muted);margin-bottom:14px}
+.xr-close-x{position:absolute;top:14px;right:14px}
+.xr-close-x button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--fg);font-size:1.5rem;cursor:pointer}
+.xr-guide{position:fixed}
+.xr-hud{display:none}
+.xr-preview .xr-hud{display:flex;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:90;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center;width:max-content;max-width:calc(100% - 24px);padding:10px 12px 10px 18px;border-radius:14px;background:rgba(5,6,11,.75);backdrop-filter:blur(10px);border:1px solid var(--line);font:500 .78rem var(--mono);color:var(--muted)}
+.xr-hud .btn{min-height:40px;padding:8px 14px;font-size:.8rem}
+@media (max-width:700px){ .xr-legend{grid-template-columns:1fr} }

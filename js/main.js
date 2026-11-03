@@ -420,17 +420,25 @@ async function initGL() {
   const xrCtx = {
     renderer, scene, camera, world, U, setPair, keys, COLORS, LAYOUT, ry, lerp, updateHero, DATA,
     getTime: () => time,
-    onEnd: () => { xr = null; cur = -1; U.uSize.value = mobile ? .085 : .07; camera.fov = 45; camera.rotation.set(0, 0, 0); camera.position.set(0, 0, 0); measure(); },
+    onEnd: () => { xr = null; if (location.hash === '#xr-preview') history.replaceState(null, '', location.pathname + location.search); cur = -1; U.uSize.value = mobile ? .085 : .07; camera.fov = 45; camera.rotation.set(0, 0, 0); camera.position.set(0, 0, 0); measure(); },
   };
   const enterXR = async mode => {
     if (xr) return;
     try { const { startXR } = await import('./xr.js'); xr = await startXR(mode, xrCtx); if (!mode) window.__xr = xr; }
     catch (err) { console.error(err); toast('Session XR impossible : ' + err.message); }
   };
+  // "Mode immersif 3D" opens the illustrated guide, which offers VR / MR / desktop preview
+  const guide = $('#xr-guide');
+  $('#xr-open').hidden = false;
+  $('#xr-open').addEventListener('click', () => { guide.showModal(); import('./xr.js').catch(() => {}); }); // warm the module so the headset session starts within the click
   for (const [mode, btn] of [['immersive-vr', $('#xr-vr')], ['immersive-ar', $('#xr-ar')]]) {
-    navigator.xr?.isSessionSupported(mode).then(ok => { if (ok) { btn.hidden = false; btn.addEventListener('click', () => enterXR(mode)); } }).catch(() => {});
+    navigator.xr?.isSessionSupported(mode).then(ok => { if (ok) { btn.hidden = false; $('#xr-novr').hidden = true; } }).catch(() => {});
+    btn.addEventListener('click', () => { guide.close(); enterXR(mode); });
   }
-  if (location.hash === '#xr-preview') enterXR(null); // desktop preview of the immersive scene
+  $('#xr-pv').addEventListener('click', () => { guide.close(); enterXR(null); });
+  $('#xr-exit').addEventListener('click', () => xr?.end());
+  const fromHash = () => { if (location.hash === '#xr-preview') enterXR(null); };
+  fromHash(); addEventListener('hashchange', fromHash);
 
   renderer.setAnimationLoop(now => {
     const dt = Math.min((now - last) / 1000, .05); last = now;
