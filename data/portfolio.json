@@ -1,0 +1,82 @@
+{
+  "profile": {
+    "firstName": "MOUSSA",
+    "lastName": "THIOR",
+    "name": "Moussa THIOR",
+    "alias": "LordPhenixDeNetra",
+    "title": "Ingénieur Systèmes d'Information Répartis",
+    "location": "Dakar, Sénégal",
+    "city": "DAKAR, SN",
+    "coords": "14.6928° N · 17.4467° W",
+    "timezone": "Africa/Dakar",
+    "greeting": "Dalal ak jàmm",
+    "greetingSub": "— Bienvenue · Welcome",
+    "availability": "Disponible",
+    "heroSub": "Je conçois des systèmes de production robustes depuis Dakar : moteurs de données en Rust, plateformes temps réel souveraines, outils de sécurité défensive, IA et expériences immersives."
+  },
+  "links": {
+    "email": "netratior@gmail.com",
+    "github": "https://github.com/LordPhenixDeNetra",
+    "linkedin": "https://www.linkedin.com/in/moussa-thior-699500195/",
+    "x": "https://x.com/N_THIOR"
+  },
+  "roles": [
+    "Ingénieur Systèmes d'Information Répartis",
+    "Backend & infra en Rust · Go",
+    "Sécurité défensive & pentest API",
+    "IA / ML · AR · VR · XR",
+    "Fondateur de NTech"
+  ],
+  "about": {
+    "lead": "Ingénieur backend & infrastructure, diplômé en Systèmes d'Information Répartis de l'Université Cheikh Anta Diop. Je travaille en **Rust · Go · Python · TypeScript · Java**, avec un pied dans l'IA/ML, la réalité étendue (AR · VR · MR · XR) et la sécurité défensive.",
+    "note": "Ouvert aux collaborations produit, missions freelance et au conseil en architecture."
+  },
+  "stats": [
+    { "value": 40, "label": "dépôts publics · GitHub live", "live": "github_repos" },
+    { "value": 9, "label": "langages pratiqués" },
+    { "value": 4, "label": "projets en cours" },
+    { "value": 6, "label": "domaines : back, infra, IA, XR, sécu, mobile" }
+  ],
+  "timeline": [
+    { "tag": "Formation", "title": "Systèmes d'Information Répartis", "text": "Université Cheikh Anta Diop de Dakar (UCAD)." },
+    { "tag": "Entrepreneuriat", "title": "Fondateur de NTech", "text": "Solutions web, mobile, intelligence artificielle et technologies immersives." },
+    { "tag": "Terrain", "title": "Full-Stack · Lead Developer · Consultant IA", "text": "Projets à fort impact dans la santé, l'éducation et l'e-commerce." },
+    { "tag": "Aujourd'hui", "title": "Backend, infra & sécurité", "text": "Moteurs de données Rust, plateformes temps réel souveraines, passerelles hospitalières, outillage de pentest." }
+  ],
+  "now": [
+    { "name": "Ndaal", "repo": "Ndaal" },
+    { "name": "LPDNSoft", "repo": "lpdnsoft-launcher" },
+    { "name": "ARCHITECT Bridge", "repo": "architect-bridge" },
+    { "name": "HermiNas" }
+  ],
+  "projects": [
+    { "name": "Ndaal", "language": "Rust", "repo": "Ndaal", "featured": true, "description": "Moteur de données unifié entièrement en Rust : cache, vecteurs et stockage objet réunis dans un seul moteur.", "tags": ["Rust", "Storage engine", "Vector", "Cache"] },
+    { "name": "Nevelio", "language": "Rust", "repo": "nevelio", "description": "Outil de pentest d'API en ligne de commande pour des audits de sécurité rapides et automatisés.", "tags": ["Rust", "CLI", "Pentest API"] },
+    { "name": "Nexpelliarmus", "language": "Go", "repo": "Nexpelliarmus", "description": "Plateforme d'audit défensif en lecture seule : contrôleur central, agents Go et vérifications Python.", "tags": ["Go", "Python", "Blue team"] },
+    { "name": "aNtaerus", "language": "TypeScript", "repo": "aNtaerus-old", "description": "Fondation d'un assistant IA polyglotte et auto-hébergé.", "tags": ["IA", "Self-hosted", "Polyglotte"] },
+    { "name": "ARCHITECT Bridge", "language": "Python", "repo": "architect-bridge", "description": "Passerelle ASTM entre l'immuno-analyseur Abbott et le système hospitalier Hopitalia.", "tags": ["Santé", "ASTM", "Interop"] },
+    { "name": "aNkou", "language": "Rust", "repo": "ankou", "description": "VPN multiplateforme en Rust, membre de la suite desktop LPDNSoft.", "tags": ["Rust", "Réseau", "Desktop"] },
+    { "name": "my3d-dream", "language": "JavaScript", "repo": "my3d-dream", "description": "Plugin de construction de scènes 3D fondées sur des décisions d'IA vérifiables.", "tags": ["3D", "IA", "Plugin"] }
+  ],
+  "languageColors": {
+    "Rust": "#dea584", "Go": "#00add8", "Python": "#3572a5", "TypeScript": "#3178c6",
+    "JavaScript": "#f1e05a", "C#": "#178600", "Java": "#b07219", "Dart": "#00b4ab", "Kotlin": "#a97bff", "PHP": "#4f5d95"
+  },
+  "stack": [
+    { "title": "Langages", "icon": "M8 6 2 12l6 6M16 6l6 6-6 6", "items": ["Rust", "Go", "Python", "TypeScript", "Java", "Kotlin", "Dart", "C#", "PHP"] },
+    { "title": "Backend · Web · Mobile", "icon": "M3 5h18v6H3zM3 13h18v6H3zM7 8h.01M7 16h.01", "items": ["Spring", "FastAPI", "Node.js", "NestJS", "Laravel", "React", "Angular", "Next.js", "Tailwind", "Flutter"] },
+    { "title": "IA / ML", "icon": "M12 2a4 4 0 0 1 4 4v1a4 4 0 0 1 2 7.5V18a4 4 0 0 1-8 0M12 2a4 4 0 0 0-4 4v1a4 4 0 0 0-2 7.5V18a4 4 0 0 0 8 0M12 2v20", "items": ["PyTorch", "TensorFlow", "scikit-learn", "OpenCV", "Hugging Face", "RAG"] },
+    { "title": "AR · VR · XR", "icon": "M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4l-2-3h-4l-2 3H4a2 2 0 0 1-2-2z", "items": ["Unity", "Blender", "WebXR", "Three.js"] },
+    { "title": "Infra & Data", "icon": "M12 2 3 7l9 5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5", "items": ["PostgreSQL", "Redis", "Docker", "Kubernetes", "Linux", "GitHub Actions"] },
+    { "title": "Sécurité défensive", "icon": "M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z", "items": ["Pentest API", "Audit read-only", "DevSecOps", "VPN", "Hardening"] }
+  ],
+  "marquee": ["Rust", "Go", "Python", "TypeScript", "Java", "Kotlin", "Dart", "C#", "PHP", "Kubernetes", "WebXR", "PyTorch"],
+  "terminal": {
+    "commands": {
+      "wolof": "Nanga def ? — Maa ngi fi rekk, jërëjëf ! Dalal ak jàmm ci sama portfolio.",
+      "ls": "ndaal/  nevelio/  nexpelliarmus/  antaerus/  ankou/  architect-bridge/  my3d-dream/  secrets.txt",
+      "cat secrets.txt": "Permission refusée. (Le vrai secret : beaucoup de café et cargo build --release.)",
+      "rm -rf /": "Bloqué. Nexpelliarmus a journalisé l'incident. Bien essayé."
+    }
+  }
+}
