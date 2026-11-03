@@ -9,6 +9,7 @@ globe terrestre centré sur Dakar → nœud torique → galaxie → treillis →
 index.html            structure de la page
 css/style.css         styles
 js/main.js            rendu du contenu, terminal, scène 3D
+js/xr.js              expérience immersive VR / réalité mixte (chargée à la demande)
 data/portfolio.json   tout le contenu éditable
 assets/               masque terre/océan du globe
 ```
@@ -24,6 +25,15 @@ python -m http.server 8000   # puis http://localhost:8000
 ## Déployer
 
 Pousser ce dossier dans un dépôt nommé `LordPhenixDeNetra.github.io` → GitHub Pages le sert sur https://lordphenixdenetra.github.io/.
+
+## Réalité virtuelle et mixte (Meta Quest)
+
+Ouvrez le site dans le navigateur du casque : les boutons **Entrer en VR** et **Réalité mixte** apparaissent.
+Dans le casque : laser + gâchette (ou pincement des doigts) pour sélectionner, maintenir ou grip pour saisir et lancer,
+deux mains pour agrandir, stick pour tourner le globe ou rapprocher l'objet tenu. Les particules fuient vos mains.
+WebXR exige HTTPS : testez sur l'URL GitHub Pages.
+
+Aperçu sans casque : `http://localhost:8000/#xr-preview` (souris = laser, clic gauche = gâchette, clic droit = grip, flèches = tourner, Échap = quitter).
 
 ## Modifier le contenu
 

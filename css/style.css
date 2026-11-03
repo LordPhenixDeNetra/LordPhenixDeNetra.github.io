@@ -200,3 +200,5 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 }
 .hello .hi{color:var(--gold);font-weight:500}
 [hidden]{display:none!important}
+.xr-preview header,.xr-preview main,.xr-preview footer,.xr-preview .rail,.xr-preview .cur,.xr-preview .cur-ring{display:none!important}
+.xr-preview #gl{pointer-events:auto;cursor:crosshair}
